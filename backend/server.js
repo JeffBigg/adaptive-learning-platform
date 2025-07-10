@@ -29,7 +29,7 @@ const activityRoutes = require('./routes/activities');
 app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/activities', activityRoutes);
-
+app.use('/api/diagnostic', require('./routes/diagnostic'));
 // Arrancar servidor
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server en puerto ${PORT}`));
