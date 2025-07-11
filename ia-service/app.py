@@ -29,7 +29,7 @@ def predict():
     vec = vec.reshape(-1, 1)  # para clustering
 
     # Clustering
-    kmeans = KMeans(n_clusters=K, random_state=SEED)
+    kmeans = KMeans(n_clusters=K, random_state=SEED, n_init=10)  # <-- n_init explícito
     kmeans.fit(vec)
     # Determinar cluster de nuestro vector medio
     cluster = kmeans.predict([[vec.mean()]])[0]

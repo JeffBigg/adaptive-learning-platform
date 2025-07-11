@@ -11,7 +11,7 @@ router.get('/', auth, async (req, res) => {
     const userId = req.userId;
     // Obtener resultados agrupados
     const results = await Result.aggregate([
-      { $match: { userId: mongoose.Types.ObjectId(userId) } },
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $lookup: {
           from: 'activities', localField: 'activityId', foreignField: '_id', as: 'activity'
       }},
@@ -33,6 +33,37 @@ router.get('/', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error obteniendo progreso' });
+  }
+});
+
+// GET /api/progress/history
+router.get('/history', auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    // Agrupa por fecha (solo día) y calcula el % de aciertos por día
+    const results = await Result.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$submittedAt" }
+          },
+          total: { $sum: 1 },
+          correct: { $sum: { $cond: ['$correct', 1, 0] } }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    const history = results.map(r => ({
+      date: r._id,
+      percent: Math.round((r.correct / r.total) * 100)
+    }));
+
+    res.json(history);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error obteniendo historial de progreso' });
   }
 });
 

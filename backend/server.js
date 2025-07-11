@@ -32,6 +32,8 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/diagnostic', require('./routes/diagnostic'));
 app.use('/api/progress', require('./routes/progress'));
+app.use('/api/export', require('./routes/export'));
+app.use('/api/students', require('./routes/students'));
 // Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack);

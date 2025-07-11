@@ -1,10 +1,14 @@
 const router = require('express').Router();
 const Activity = require('../models/Activity');
-// Similar CRUD a questions:
+
+// GET /api/activities?level=intermedio
 router.get('/', async (req, res) => {
-  const list = await Activity.find().limit(100);
+  const { level } = req.query;
+  const filter = level ? { level } : {};
+  const list = await Activity.find(filter).limit(10);
   res.json(list);
 });
+
 router.post('/', async (req, res) => {
   const a = new Activity(req.body);
   await a.save(); res.status(201).json(a);

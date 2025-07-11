@@ -6,10 +6,13 @@ const User = require('../models/User');
 // Registro
 router.post('/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { nombre, apellido, email, password } = req.body;
+    if (!nombre || !apellido || !email || !password) {
+      return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
-    const user = new User({ email, passwordHash });
+    const user = new User({ nombre, apellido, email, passwordHash });
     await user.save();
     res.status(201).json({ message: 'Usuario creado' });
   } catch (err) {

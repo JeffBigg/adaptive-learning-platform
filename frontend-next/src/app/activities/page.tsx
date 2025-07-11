@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import API from '../../lib/api';
 
 interface Activity {
@@ -27,6 +28,7 @@ interface RootState {
 }
 
 export default function Activities() {
+  const router = useRouter();
   const { level, topic } = useSelector((state: RootState) => state.user);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [current, setCurrent] = useState(0);
@@ -73,39 +75,79 @@ export default function Activities() {
         correct 
       });
       
-      setCurrent(prev => prev + 1);
-      setInput('');
-      setError(null);
+      if (current + 1 >= activities.length) {
+        router.push('/dashboard');
+      } else {
+        setCurrent(prev => prev + 1);
+        setInput('');
+        setError(null);
+      }
     } catch (error) {
       console.error('Error submitting result:', error);
       setError('Error al enviar la respuesta');
     }
   };
 
-  if (error) return <p className="p-4 text-red-600">{error}</p>;
-  if (!activities.length) return <p className="p-4">Cargando actividades...</p>;
-  if (current >= activities.length) return <p className="p-4 text-green-600">✅ Actividades completadas. ¡Buen trabajo!</p>;
-
-  const act = activities[current];
-  if (!act) return <p className="p-4 text-red-600">Error: Actividad no disponible</p>;
-
-  return (
-    <div className="p-4 max-w-xl mx-auto bg-white shadow-md rounded">
-      <h2 className="text-xl font-semibold mb-2">Actividad {current + 1}</h2>
-      <p className="mb-4">{act.prompt}</p>
-      <input 
-        className="border w-full mb-4 px-3 py-2 rounded" 
-        value={input} 
-        onChange={e => setInput(e.target.value)}
-        placeholder="Escribe tu respuesta..."
-      />
-      <button 
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors" 
-        onClick={handleSubmit}
-        disabled={!input.trim()}
-      >
-        Enviar
-      </button>
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-blue-200">
+        <p className="text-red-600 text-center">{error}</p>
+      </div>
     </div>
   );
-}   
+  if (!activities.length) return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-blue-200">
+        <p className="text-blue-700 text-center">Cargando actividades...</p>
+      </div>
+    </div>
+  );
+  if (current >= activities.length) return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-blue-200 flex flex-col items-center">
+        <span className="text-4xl mb-4">🎉</span>
+        <p className="text-green-600 text-center text-xl font-semibold">✅ Actividades completadas. ¡Buen trabajo!</p>
+      </div>
+    </div>
+  );
+
+  const act = activities[current];
+  if (!act) return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-blue-200">
+        <p className="text-red-600 text-center">Error: Actividad no disponible</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl p-8 border border-blue-200">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-blue-700">
+          Actividad {current + 1} de {activities.length}
+        </h2>
+        <div className="mb-6">
+          <p className="text-lg font-semibold text-gray-800 mb-4 text-center">{act.prompt}</p>
+          <input 
+            className="border w-full px-4 py-3 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition mb-4"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Escribe tu respuesta..."
+            autoFocus
+          />
+        </div>
+        <button 
+          className={`w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-lg transition-colors duration-200 shadow ${!input.trim() ? 'opacity-60 cursor-not-allowed' : ''}`}
+          onClick={handleSubmit}
+          disabled={!input.trim()}
+        >
+          Enviar respuesta
+        </button>
+        <div className="mt-6 flex justify-between text-sm text-gray-500">
+          <span>Tema: <span className="font-semibold text-blue-600">{act.topic}</span></span>
+          <span>Nivel: <span className="font-semibold text-blue-600 capitalize">{act.level}</span></span>
+        </div>
+      </div>
+    </div>
+  );
+}
